@@ -3,7 +3,7 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
-const port = 5000;
+const port =  5000;
 
 app.use(cors());
 app.use(express.json());
@@ -25,7 +25,7 @@ function verifyToken(req, res, next) {
   const token = req.headers.authorization.split(" ")[1];
   const verify = jwt.verify(token, "secret");
   if (!verify?.email) {
-    return res.send("You are not authorized");
+    return res.send("You are not authorization");
   }
   req.user = verify.email;
   next();
@@ -34,11 +34,8 @@ function verifyToken(req, res, next) {
 const uri =
   "mongodb+srv://sanaullahsaber:DjiTyINUY9IqVZzG@cluster0.l1excwt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  tls: true,
-  tlsInsecure: true, // Use with caution. Use for testing if needed.
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -58,19 +55,22 @@ async function run() {
       "ecoMartProductCollection"
     );
 
-    // Product routes
+    //? product
+    // add products form dashboard add Product page;
     app.post("/grocers", verifyToken, async (req, res) => {
       const grocersData = req.body;
       const result = await ecoMartProductCollection.insertOne(grocersData);
       res.send(result);
     });
 
+    // product get for all data page
     app.get("/grocers", async (req, res) => {
       const grocersData = ecoMartProductCollection.find();
       const result = await grocersData.toArray();
       res.send(result);
     });
 
+    // product get for all product page
     app.get("/grocers/:email", async (req, res) => {
       const email = req.params.email;
       const grocers = ecoMartProductCollection.find({ email });
@@ -78,6 +78,7 @@ async function run() {
       res.send(result);
     });
 
+    // product get for my product page show single product
     app.get("/grocers/get/:id", async (req, res) => {
       const id = req.params.id;
       const grocersData = await ecoMartProductCollection.findOne({
@@ -87,6 +88,7 @@ async function run() {
       console.log(grocersData);
     });
 
+    // product patch for my product page show single product edit
     app.patch("/grocers/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
@@ -97,6 +99,7 @@ async function run() {
       res.send(result);
     });
 
+    // product delete for all data page show single product delete
     app.delete("/grocers/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await ecoMartProductCollection.deleteOne({
@@ -105,7 +108,10 @@ async function run() {
       res.send(result);
     });
 
-    // User routes
+    /* ===============================================================*/
+
+    //?user
+    // save user information when google login
     app.post("/user", async (req, res) => {
       const user = req.body;
       const token = createToken(user);
@@ -113,12 +119,17 @@ async function run() {
         email: user?.email,
       });
       if (isUserExist?._id) {
-        return res.send({ status: "success", message: "login success", token });
+        return res.send({
+          status: "success",
+          message: "login success",
+          token,
+        });
       }
       await ecoMartUserCollection.insertOne(user);
       res.send(token);
     });
 
+    // user get from with id and show this dashboard profile management for edit user profile
     app.get("/user/get/:id", async (req, res) => {
       const id = req.params.id;
       const result = await ecoMartUserCollection.findOne({
@@ -127,12 +138,14 @@ async function run() {
       res.send(result);
     });
 
+    // user get from with email and show this dashboard profile management page for user profile
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const result = await ecoMartUserCollection.findOne({ email });
       res.send(result);
     });
 
+    // user update with email and show this dashboard profile management page for user profile
     app.patch("/user/:email", async (req, res) => {
       const email = req.params.email;
       const userData = req.body;
@@ -145,17 +158,15 @@ async function run() {
     });
 
     console.log("Database is connected");
-  } catch (error) {
-    console.error("Database connection error:", error);
+  } finally {
   }
 }
-
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Route is working");
 });
 
-app.listen(port, () => {
-  console.log("App is listening on port:", port);
+app.listen(port, (req, res) => {
+  console.log("App is listening on port :", port);
 });

@@ -31,7 +31,8 @@ function verifyToken(req, res, next) {
   next();
 }
 
-const uri = "your_mongodb_connection_string_here";
+const uri =
+  "mongodb+srv://sanaullahsaber:DjiTyINUY9IqVZzG@cluster0.l1excwt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
